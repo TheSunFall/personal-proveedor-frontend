@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { API_ENDPOINTS } from '@/lib/config';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -19,9 +20,9 @@ export default function Dashboard() {
     const fetchStats = async () => {
       try {
         const [projectsRes, personalRes, providersRes] = await Promise.all([
-          fetch('https://personal-proveedor.onrender.com/api/proyecto/1'),
-          fetch('https://personal-proveedor.onrender.com/api/empleado/1'),
-          fetch('https://personal-proveedor.onrender.com/api/proveedor/1')
+          fetch(`${API_ENDPOINTS.PROYECTO}`),
+          fetch(`${API_ENDPOINTS.EMPLEADO}`),
+          fetch(`${API_ENDPOINTS.PROVEEDOR}`)
         ]);
 
         const projects = projectsRes.ok ? await projectsRes.json() : [];
@@ -56,7 +57,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <main className="min-h-screen bg-background p-8">
+    <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-foreground">Dashboard</h1>
         

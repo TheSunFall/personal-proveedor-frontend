@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { API_ENDPOINTS } from '@/lib/config';
 
 export default function PagosPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,8 +23,8 @@ export default function PagosPage() {
     try {
       setLoading(true);
       const [personalRes, proveedoresRes] = await Promise.all([
-        fetch('https://personal-proveedor.onrender.com/api/empleado/1'),
-        fetch('https://personal-proveedor.onrender.com/api/proveedor/1'),
+        fetch(`${API_ENDPOINTS.EMPLEADO}/completos`),
+        fetch(`${API_ENDPOINTS.PROVEEDOR}/completos`),
       ]);
 
       if (personalRes.ok) {
@@ -41,16 +42,16 @@ export default function PagosPage() {
     }
   };
 
-  const filteredPersonal = personal.filter(p =>
+  const filteredPersonal = searchTerm? (personal.filter(p =>
     p.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )) : personal;
 
-  const filteredProveedores = proveedores.filter(p =>
+  const filteredProveedores = searchTerm? (proveedores.filter(p =>
     p.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )) : proveedores;
 
   return (
-    <main className="min-h-screen bg-background p-8">
+    <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground">Pagos</h1>
@@ -82,7 +83,7 @@ export default function PagosPage() {
           <TabsContent value="personal">
             <Card>
               <CardHeader>
-                <CardTitle>Personal - Pagos de Nómina</CardTitle>
+                <CardTitle>Personal - Recibo por Honorarios</CardTitle>
                 <CardDescription>Realiza pagos a empleados</CardDescription>
               </CardHeader>
               <CardContent>
@@ -93,9 +94,9 @@ export default function PagosPage() {
                     <p className="text-muted-foreground">No hay resultados</p>
                   ) : (
                     filteredPersonal.map((p) => (
-                      <div key={p.cod_empleado} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted">
+                      <div key={p.codEmpleado} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted">
                         <div>
-                          <p className="font-medium">{p.nombre_completo}</p>
+                          <p className="font-medium">{p.persona.desPersona}</p>
                           <p className="text-sm text-muted-foreground">{p.email}</p>
                         </div>
                         <Button size="sm">Realizar Pago</Button>
@@ -121,10 +122,10 @@ export default function PagosPage() {
                     <p className="text-muted-foreground">No hay resultados</p>
                   ) : (
                     filteredProveedores.map((p) => (
-                      <div key={p.cod_persona} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted">
+                      <div key={p.codProveedor} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted">
                         <div>
-                          <p className="font-medium">{p.nombre_completo}</p>
-                          <p className="text-sm text-muted-foreground">RUC: {p.ruc}</p>
+                          <p className="font-medium">{p.persona.desPersona}</p>
+                          <p className="text-sm text-muted-foreground">RUC: {p.nroRuc}</p>
                         </div>
                         <Button size="sm">Realizar Pago</Button>
                       </div>

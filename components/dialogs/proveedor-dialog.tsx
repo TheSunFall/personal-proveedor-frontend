@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { API_ENDPOINTS } from '@/lib/config';
 
 interface ProveedorDialogProps {
   open: boolean;
@@ -53,8 +54,8 @@ export function ProveedorDialog({ open, onOpenChange, editingItem, onSuccess }: 
       setLoading(true);
       const method = editingItem ? 'PUT' : 'POST';
       const url = editingItem
-        ? `https://personal-proveedor.onrender.com/api/proveedor/1/${editingItem.cod_persona}`
-        : 'https://personal-proveedor.onrender.com/api/proveedor/1';
+        ? `${API_ENDPOINTS.PROVEEDOR}/1/${editingItem.cod_persona}`
+        : `${API_ENDPOINTS.PROVEEDOR}/1`;
 
       const payload = {
         ...formData,

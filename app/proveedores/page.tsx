@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { ProveedorDialog } from '@/components/dialogs/proveedor-dialog';
 import { ProveedorTable } from '@/components/tables/proveedor-table';
+import { API_ENDPOINTS } from '@/lib/config';
 
 export default function ProveedoresPage() {
   const [proveedores, setProveedores] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export default function ProveedoresPage() {
   const fetchProveedores = async () => {
     try {
       setLoading(true);
-      const res = await fetch('https://personal-proveedor.onrender.com/api/proveedor/1');
+      const res = await fetch(`${API_ENDPOINTS.PROVEEDOR}/completos`);
       if (res.ok) {
         const data = await res.json();
         setProveedores(data);
@@ -37,11 +38,12 @@ export default function ProveedoresPage() {
   };
 
   useEffect(() => {
-    const filtered = proveedores.filter(p =>
-      p.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.nombre_corto?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProveedores(filtered);
+    if (searchTerm) {
+      const filtered = proveedores.filter(p => p.persona?.desPersona.toLowerCase().includes(searchTerm.toLowerCase()) || p.nroRuc.toLowerCase().includes(searchTerm.toLowerCase()));
+      setFilteredProveedores(filtered);
+    } else {
+      setFilteredProveedores(proveedores);
+    }
   }, [searchTerm, proveedores]);
 
   const handleAdd = () => {
@@ -57,7 +59,7 @@ export default function ProveedoresPage() {
   const handleDelete = async (item: any) => {
     if (confirm('¿Está seguro de que desea eliminar este proveedor?')) {
       try {
-        const res = await fetch(`https://personal-proveedor.onrender.com/api/proveedor/1/${item.cod_persona}`, {
+        const res = await fetch(`${API_ENDPOINTS.PROVEEDOR}/1/${item.cod_persona}`, {
           method: 'DELETE',
         });
         if (res.ok) {
@@ -76,7 +78,7 @@ export default function ProveedoresPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background p-8">
+    <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>

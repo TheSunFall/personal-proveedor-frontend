@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { API_ENDPOINTS } from '@/lib/config';
 
 interface ProyectoDialogProps {
   open: boolean;
@@ -58,7 +59,7 @@ export function ProyectoDialog({ open, onOpenChange, editingItem, onSuccess }: P
 
   const fetchClientes = async () => {
     try {
-      const res = await fetch('https://personal-proveedor.onrender.com/api/cliente/1');
+      const res = await fetch(`${API_ENDPOINTS.CLIENTE}`);
       if (res.ok) {
         const data = await res.json();
         setClientes(data);
@@ -73,8 +74,8 @@ export function ProyectoDialog({ open, onOpenChange, editingItem, onSuccess }: P
       setLoading(true);
       const method = editingItem ? 'PUT' : 'POST';
       const url = editingItem
-        ? `https://personal-proveedor.onrender.com/api/proyecto/1/${editingItem.cod_pyto}`
-        : 'https://personal-proveedor.onrender.com/api/proyecto/1';
+        ? `${API_ENDPOINTS.PROYECTO}/1/${editingItem.cod_pyto}`
+        : `${API_ENDPOINTS.PROYECTO}`;
 
       const payload = {
         ...formData,

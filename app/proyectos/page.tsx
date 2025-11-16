@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil, Trash2, Search, Users, CheckSquare } from 'lucide-react';
 import { ProyectoDialog } from '@/components/dialogs/proyecto-dialog';
 import { ProyectoTable } from '@/components/tables/proyecto-table';
+import { API_ENDPOINTS } from '@/lib/config';
 
 export default function ProyectosPage() {
   const [proyectos, setProyectos] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export default function ProyectosPage() {
   const fetchProyectos = async () => {
     try {
       setLoading(true);
-      const res = await fetch('https://personal-proveedor.onrender.com/api/proyecto/1');
+      const res = await fetch(`${API_ENDPOINTS.PROYECTO}/completos`);
       if (res.ok) {
         const data = await res.json();
         setProyectos(data);
@@ -37,11 +38,16 @@ export default function ProyectosPage() {
   };
 
   useEffect(() => {
-    const filtered = proyectos.filter(p =>
-      p.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.codigo?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    if (searchTerm) {
+      const filtered = proyectos.filter(p =>
+      p.nombPyto?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.codPyto?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredProyectos(filtered);
+    } else {
+      setFilteredProyectos(proyectos)
+    }
   }, [searchTerm, proyectos]);
 
   const handleAdd = () => {
@@ -57,7 +63,7 @@ export default function ProyectosPage() {
   const handleDelete = async (item: any) => {
     if (confirm('¿Está seguro de que desea eliminar este proyecto?')) {
       try {
-        const res = await fetch(`https://personal-proveedor.onrender.com/api/proyecto/1/${item.cod_pyto}`, {
+        const res = await fetch(`${API_ENDPOINTS.PROYECTO}/1/${item.cod_pyto}`, {
           method: 'DELETE',
         });
         if (res.ok) {
@@ -76,7 +82,7 @@ export default function ProyectosPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background p-8">
+    <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>

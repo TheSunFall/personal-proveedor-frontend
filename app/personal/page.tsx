@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { PersonalDialog } from '@/components/dialogs/personal-dialog';
 import { PersonalTable } from '@/components/tables/personal-table';
+import { API_ENDPOINTS } from '@/lib/config';
 
 export default function PersonalPage() {
   const [personal, setPersonal] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export default function PersonalPage() {
   const fetchPersonal = async () => {
     try {
       setLoading(true);
-      const res = await fetch('https://personal-proveedor.onrender.com/api/empleado/1');
+      const res = await fetch(`${API_ENDPOINTS.EMPLEADO}/completos`);
       if (res.ok) {
         const data = await res.json();
         setPersonal(data);
@@ -37,11 +38,12 @@ export default function PersonalPage() {
   };
 
   useEffect(() => {
-    const filtered = personal.filter(p =>
-      p.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.apellido_paterno?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredPersonal(filtered);
+    if (searchTerm) {
+      const filtered = personal?.filter(p => p.persona?.desPersona.toLowerCase().includes(searchTerm.toLowerCase()) || p.dni.toLowerCase().includes(searchTerm.toLowerCase()))
+      setFilteredPersonal(filtered);
+    } else {
+      setFilteredPersonal(personal)
+    }
   }, [searchTerm, personal]);
 
   const handleAdd = () => {
@@ -57,7 +59,7 @@ export default function PersonalPage() {
   const handleDelete = async (item: any) => {
     if (confirm('¿Está seguro de que desea eliminar este empleado?')) {
       try {
-        const res = await fetch(`https://personal-proveedor.onrender.com/api/empleado/1/${item.cod_empleado}`, {
+        const res = await fetch(`${API_ENDPOINTS.EMPLEADO}/1/${item.cod_empleado}`, {
           method: 'DELETE',
         });
         if (res.ok) {
@@ -76,7 +78,7 @@ export default function PersonalPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background p-8">
+    <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -95,7 +97,7 @@ export default function PersonalPage() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 text-muted-foreground" size={20} />
                 <Input
-                  placeholder="Buscar por nombre o apellido..."
+                  placeholder="Buscar por nombre, apellido, DNI..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"

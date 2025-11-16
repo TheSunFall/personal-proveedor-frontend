@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${geistSans.className} bg-background text-foreground`}>
+      <body className={`${geistSans.className} flex bg-background text-foreground`}>
         <Navigation />
         {children}
       </body>
