@@ -13,27 +13,31 @@ export default function Dashboard() {
     projects: 0,
     personnel: 0,
     providers: 0,
-    activeProjects: 0
+    activeProjects: 0,
+    persons: 0, // <-- nuevo campo
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [projectsRes, personalRes, providersRes] = await Promise.all([
+        const [projectsRes, personalRes, providersRes, personsRes] = await Promise.all([
           fetch(`${API_ENDPOINTS.PROYECTO}`),
           fetch(`${API_ENDPOINTS.EMPLEADO}`),
-          fetch(`${API_ENDPOINTS.PROVEEDOR}`)
+          fetch(`${API_ENDPOINTS.PROVEEDOR}`),
+          fetch(`${API_ENDPOINTS.PERSONA}`), // <-- nueva petición
         ]);
 
         const projects = projectsRes.ok ? await projectsRes.json() : [];
         const personal = personalRes.ok ? await personalRes.json() : [];
         const providers = providersRes.ok ? await providersRes.json() : [];
+        const persons = personsRes.ok ? await personsRes.json() : [];
 
         setStats({
           projects: projects.length || 0,
           personnel: personal.length || 0,
           providers: providers.length || 0,
-          activeProjects: projects.filter((p: any) => p.estado !== 'COMPLETADO').length || 0
+          activeProjects: projects.filter((p: any) => p.estado !== 'COMPLETADO').length || 0,
+          persons: persons.length || 0, // <-- nuevo campo
         });
       } catch (error) {
         console.error('Error fetching stats:', error);

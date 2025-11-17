@@ -117,72 +117,183 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
     }
   }, [open, editingItem]);
 
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      const method = editingItem ? 'PUT' : 'POST';
-      const url = editingItem
-        ? `${API_ENDPOINTS.EMPLEADO}/1/${editingItem.cod_empleado}`
-        : `${API_ENDPOINTS.EMPLEADO}`;
-
-      const payload = {
-        ...formData,
-        cod_cia: 1,
-        grados_academicos: grados,
-        especializaciones: especializaciones,
-        experiencias_laborales: experiencias,
-      };
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      grados.forEach(grad => {
-        fetch(`${API_ENDPOINTS.GRADO}/${method !== 'POST' ? grad.codCia + '/' + grad.codGrado + '/' + grad.codEmpleado : ''}`, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(grad)
-        })
-          .catch(error => {
-            console.error('Error al hacer la solicitud:', error);
-          });
-      })
-
-      especializaciones.forEach(esp => {
-        fetch(`${API_ENDPOINTS.EMPLEADO}/${method !== 'POST' ? esp.codCia + '/' + esp.codEspecialidad + '/' + esp.codEmpleado : ''}`, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(esp)
-        })
-          .catch(error => {
-            console.error('Error al hacer la solicitud:', error);
-          });
-      })
-
-      experiencias.forEach(exp => {
-        fetch(`${API_ENDPOINTS.EMPLEADO}/${method !== 'POST' ? exp.codCia + '/' + exp.codExperiencia + '/' + exp.codEmpleado : ''}`, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(exp)
-        })
-          .catch(error => {
-            console.error('Error al hacer la solicitud:', error);
-          });
-      })
-      if (res.ok) {
-        onSuccess();
-        onOpenChange(false);
-      } else {
-        alert('Error al guardar los datos');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Error al guardar los datos');
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async () => {  
+    try {  
+      setLoading(true);  
+    
+      if (!editingItem) {  
+        // PASO 1: Crear PERSONA primero  
+        const personaPayload = {  
+          codCia: 1,  
+          // codPersona ya no es necesario - el backend lo generará  
+          tipPersona: 'E',  
+          desPersona: formData.nombre_completo,  
+          desCorta: formData.nombre_completo.substring(0, 30),  
+          descAlterna: formData.nombre_completo,  
+          desCortaAlt: formData.nombre_completo.substring(0, 10),  
+          vigente: '1'  
+        };
+    
+        const personaRes = await fetch(API_ENDPOINTS.PERSONA, {  
+          method: 'POST',  
+          headers: { 'Content-Type': 'application/json' },  
+          body: JSON.stringify(personaPayload),  
+        });  
+          
+        if (!personaRes.ok) {  
+          const errorText = await personaRes.text();  
+          console.error('Error del backend:', errorText);  
+          alert(`Error al crear la persona: ${errorText}`);  
+          return;  
+        }
+    
+        const personaCreada = await personaRes.json();  
+          
+        // PASO 2: Crear EMPLEADO con TODOS los campos requeridos  
+        const empleadoPayload = {    
+          codCia: 1,    
+          codEmpleado: personaCreada.codPersona,    
+          direcc: formData.direccion || 'Sin dirección',    
+          celular: formData.telefono || '000000000',    
+          email: formData.email || 'sin-email@example.com',    
+          dni: formData.documento_identidad || '00000000',    
+          fecNac: formData.fecha_nacimiento || new Date().toISOString().split('T')[0],    
+          hobby: 'Sin especificar',  // NO usar string vacío ''  
+          nroCIP: '0000000000',    
+          fecCIPVig: new Date().toISOString().split('T')[0],    
+          licCond: '0',    
+          flgEmplIEA: '0',    
+          observac: 'Sin observaciones',  // NO usar string vacío ''  
+          codCargo: 1,    
+          vigente: '1'    
+        };  
+    
+        const empleadoRes = await fetch(API_ENDPOINTS.EMPLEADO, {      
+          method: 'POST',      
+          headers: { 'Content-Type': 'application/json' },      
+          body: JSON.stringify(empleadoPayload),      
+        });      
+          
+        console.log('Status del empleado:', empleadoRes.status);  
+        console.log('Headers:', empleadoRes.headers);  
+          
+        if (!empleadoRes.ok) {      
+          const errorText = await empleadoRes.text();      
+          console.error('Error completo del backend:', errorText);  
+          console.error('Status code:', empleadoRes.status);  
+          console.error('Status text:', empleadoRes.statusText);  
+            
+          // Intentar parsear como JSON si es posible  
+          try {  
+            const errorJson = JSON.parse(errorText);  
+            console.error('Error JSON:', errorJson);  
+            alert(`Error al crear el empleado: ${errorJson.message || errorText}`);  
+          } catch {  
+            alert(`Error al crear el empleado (${empleadoRes.status}): ${errorText || empleadoRes.statusText}`);  
+          }  
+          return;      
+        }
+    
+        const empleadoCreado = await empleadoRes.json();  
+        const codEmpleado = empleadoCreado.codEmpleado;  
+    
+        // PASO 3: Crear grados académicos  
+        for (const grado of grados) {  
+          await fetch(API_ENDPOINTS.GRADO, {  
+            method: 'POST',  
+            headers: { 'Content-Type': 'application/json' },  
+            body: JSON.stringify({  
+              ...grado,  
+              codCia: 1,  
+              codEmpleado: codEmpleado  
+            })  
+          });  
+        }  
+    
+        // PASO 4: Crear especializaciones  
+        for (const esp of especializaciones) {  
+          await fetch(API_ENDPOINTS.ESPECIALIDAD, {  
+            method: 'POST',  
+            headers: { 'Content-Type': 'application/json' },  
+            body: JSON.stringify({  
+              ...esp,  
+              codCia: 1,  
+              codEmpleado: codEmpleado  
+            })  
+          });  
+        }  
+    
+        // PASO 5: Crear experiencias laborales  
+        for (const exp of experiencias) {  
+          await fetch(API_ENDPOINTS.EXPERIENCIA, {  
+            method: 'POST',  
+            headers: { 'Content-Type': 'application/json' },  
+            body: JSON.stringify({  
+              ...exp,  
+              codCia: 1,  
+              codEmpleado: codEmpleado  
+            })  
+          });  
+        }  
+    
+      } else {  
+        // Lógica de actualización  
+        const empleadoPayload = {  
+          codCia: 1,  
+          codEmpleado: editingItem.codEmpleado,  
+          direcc: formData.direccion,  
+          celular: formData.telefono,  
+          email: formData.email,  
+          dni: formData.documento_identidad,  
+          fecNac: formData.fecha_nacimiento,  
+          hobby: editingItem.hobby || '',  
+          nroCIP: editingItem.nroCIP || '0000000000',  
+          fecCIPVig: editingItem.fecCIPVig || new Date().toISOString().split('T')[0],  
+          licCond: editingItem.licCond || '0',  
+          flgEmplIEA: editingItem.flgEmplIEA || '0',  
+          observac: editingItem.observac || '',  
+          codCargo: editingItem.codCargo || 1,  
+          vigente: '1'  
+        };  
+    
+        const empleadoRes = await fetch(`${API_ENDPOINTS.EMPLEADO}/1/${editingItem.codEmpleado}`, {  
+          method: 'PUT',  
+          headers: { 'Content-Type': 'application/json' },  
+          body: JSON.stringify(empleadoPayload),  
+        });  
+    
+        if (!empleadoRes.ok) {  
+          alert('Error al actualizar el empleado');  
+          return;  
+        }  
+    
+        // Actualizar persona  
+        const personaPayload = {  
+          codCia: 1,  
+          codPersona: editingItem.codEmpleado,  
+          tipPersona: 'E',  
+          desPersona: formData.nombre_completo,  
+          desCorta: formData.nombre_completo.substring(0, 30),  
+          descAlterna: formData.nombre_completo,  
+          desCortaAlt: formData.nombre_completo.substring(0, 10),  
+          vigente: '1'  
+        };  
+    
+        await fetch(`${API_ENDPOINTS.PERSONA}/1/${editingItem.codEmpleado}`, {  
+          method: 'PUT',  
+          headers: { 'Content-Type': 'application/json' },  
+          body: JSON.stringify(personaPayload),  
+        });  
+      }  
+        
+      onSuccess();  
+      onOpenChange(false);  
+    } catch (error) {  
+      console.error('Error submitting form:', error);  
+      alert('Error al guardar los datos');  
+    } finally {  
+      setLoading(false);  
+    }  
   };
 
   return (
@@ -415,7 +526,7 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
                   <div key={`exp-${idx}`} className="p-3 border rounded-md flex justify-between items-start gap-4">
                     <div>
                       <div className="text-sm font-medium">{ex.empresa || '-'}</div>
-                      <div className="text-xs text-muted-foreground">{ex.especialidad_laboral || '-'} · {ex.fecha_inicio_laboral || '-'} to {ex.fecha_fin_laboral || '-'}</div>
+                      <div className="text-xs text-muted-foreground">{ex.especialidad_laboral || '-'} · {ex.fecha_inicio_laboral || '-'}</div>
                     </div>
                     {isEditing && (
                       <div>

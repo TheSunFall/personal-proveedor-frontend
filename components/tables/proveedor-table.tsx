@@ -35,7 +35,7 @@ export function ProveedorTable({ data, loading, onEdit, onDelete }: ProveedorTab
             <tr key={item.codProveedor} className="border-b hover:bg-muted/50">
               <td className="py-3">{item.persona.desPersona}</td>
               <td className="py-3 text-muted-foreground">{item.nroRuc || '-'}</td>
-              <td className="py-3 text-muted-foreground">{item.servicios[0].nombreServicio}</td>
+              <td className="py-3 text-muted-foreground">{item.servicios && item.servicios.length > 0? item.servicios[0].nombreServicio: 'Sin servicios'}</td>
               <td className="py-3 text-right flex gap-2 justify-end">
                 <Button
                   variant="ghost"
