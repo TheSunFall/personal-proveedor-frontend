@@ -59,7 +59,7 @@ export default function PersonalPage() {
   const handleDelete = async (item: any) => {
     if (confirm('¿Está seguro de que desea eliminar este empleado?')) {
       try {
-        const res = await fetch(`${API_ENDPOINTS.EMPLEADO}/1/${item.cod_empleado}`, {
+        const res = await fetch(`${API_ENDPOINTS.EMPLEADO}/1/${item.codEmpleado}`, {
           method: 'DELETE',
         });
         if (res.ok) {
@@ -71,8 +71,8 @@ export default function PersonalPage() {
     }
   };
 
-  const handleDialogClose = () => {
-    setOpenDialog(false);
+  const handleDialogClose = (callback: any) => {
+    callback(false);
     setEditingItem(null);
     fetchPersonal();
   };
@@ -126,7 +126,7 @@ export default function PersonalPage() {
           open={openDialog}
           onOpenChange={setOpenDialog}
           editingItem={editingItem}
-          onSuccess={handleDialogClose}
+          onSuccess={() => handleDialogClose}
         />
       </div>
     </main>

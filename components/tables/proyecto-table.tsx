@@ -8,9 +8,10 @@ interface ProyectoTableProps {
   loading: boolean;
   onEdit: (item: any) => void;
   onDelete: (item: any) => void;
+  onTask: (item: any) => void;
 }
 
-export function ProyectoTable({ data, loading, onEdit, onDelete }: ProyectoTableProps) {
+export function ProyectoTable({ data, loading, onEdit, onDelete, onTask }: ProyectoTableProps) {
   if (loading) {
     return <div className="text-center py-8 text-muted-foreground">Cargando...</div>;
   }
@@ -41,10 +42,10 @@ export function ProyectoTable({ data, loading, onEdit, onDelete }: ProyectoTable
               <td className="py-3 text-muted-foreground">{item.fecReg.toLocaleString('es-PE')}</td>
               <td className="py-3">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.codEstado === '003'
-                    ? 'bg-green-100 text-green-800'
-                    : item.codEstado === '002'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-blue-100 text-blue-800'
+                  ? 'bg-green-100 text-green-800'
+                  : item.codEstado === '002'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-blue-100 text-blue-800'
                   }`}>
                   {item.codEstado === "003"
                     ? "Completado"
@@ -54,10 +55,10 @@ export function ProyectoTable({ data, loading, onEdit, onDelete }: ProyectoTable
                 </span>
               </td>
               <td className="py-3 text-right flex gap-1 justify-end">
-                <Button variant="ghost" size="sm" title="Asignar recursos" className="text-blue-600 hover:cursor-pointer hover:bg-blue-100">
+                <Button variant="ghost" size="sm" title="Asignar recursos" className="text-cyan-600 hover:cursor-pointer hover:bg-cyan-600/20">
                   <Users size={16} />
                 </Button>
-                <Button variant="ghost" size="sm" title="Tareas" className="text-purple-600 hover:cursor-pointer hover:bg-purple-100">
+                <Button variant="ghost" size="sm" title="Tareas" onClick={() => onTask(item)} className="text-purple-500 hover:cursor-pointer hover:bg-purple-500/15">
                   <CheckSquare size={16} />
                 </Button>
                 <Button

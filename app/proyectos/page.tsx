@@ -8,13 +8,15 @@ import { Plus, Pencil, Trash2, Search, Users, CheckSquare } from 'lucide-react';
 import { ProyectoDialog } from '@/components/dialogs/proyecto-dialog';
 import { ProyectoTable } from '@/components/tables/proyecto-table';
 import { API_ENDPOINTS } from '@/lib/config';
+import { TareaDialog } from '@/components/dialogs/tareas-dialog';
 
 export default function ProyectosPage() {
   const [proyectos, setProyectos] = useState<any[]>([]);
   const [filteredProyectos, setFilteredProyectos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [taskDialog, setTaskDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => {
@@ -38,13 +40,13 @@ export default function ProyectosPage() {
   };
 
   useEffect(() => {
-    
+
     if (searchTerm) {
       const filtered = proyectos.filter(p =>
-      p.nombPyto?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.codPyto?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProyectos(filtered);
+        p.nombPyto?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.codPyto?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProyectos(filtered);
     } else {
       setFilteredProyectos(proyectos)
     }
@@ -52,13 +54,18 @@ export default function ProyectosPage() {
 
   const handleAdd = () => {
     setEditingItem(null);
-    setOpenDialog(true);
+    setEditDialog(true);
   };
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
-    setOpenDialog(true);
+    setEditDialog(true);
   };
+
+  const handleTask = (item: any) => {
+    setEditingItem(item);
+    setTaskDialog(true)
+  }
 
   const handleDelete = async (item: any) => {
     if (confirm('¿Está seguro de que desea eliminar este proyecto?')) {
@@ -75,8 +82,8 @@ export default function ProyectosPage() {
     }
   };
 
-  const handleDialogClose = () => {
-    setOpenDialog(false);
+  const handleDialogClose = (callback: any) => {
+    callback(false);
     setEditingItem(null);
     fetchProyectos();
   };
@@ -122,15 +129,23 @@ export default function ProyectosPage() {
               loading={loading}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onTask={handleTask}
             />
           </CardContent>
         </Card>
 
         <ProyectoDialog
-          open={openDialog}
-          onOpenChange={setOpenDialog}
+          open={editDialog}
+          onOpenChange={setEditDialog}
           editingItem={editingItem}
-          onSuccess={handleDialogClose}
+          onSuccess={() => handleDialogClose(setEditDialog)}
+        />
+
+        <TareaDialog
+          open={taskDialog}
+          onOpenChange={setTaskDialog}
+          editingItem={editingItem}
+          onSuccess={() => handleDialogClose(setTaskDialog)}
         />
       </div>
     </main>
