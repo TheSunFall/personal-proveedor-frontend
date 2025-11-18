@@ -41,8 +41,23 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
   const [especializaciones, setEspecializaciones] = useState<any[]>([]);
   const [experiencias, setExperiencias] = useState<any[]>([]);
 
+  // Agregar estados para rastrear items eliminados
+  const [deletedGrados, setDeletedGrados] = useState<any[]>([]);
+  const [deletedEspecializaciones, setDeletedEspecializaciones] = useState<any[]>([]);
+  const [deletedExperiencias, setDeletedExperiencias] = useState<any[]>([]);
+
   // Estados temporales para agregar nuevos ítems
-  const [newGrado, setNewGrado] = useState({ codCia: '', codGrado: '', codEmpleado: '', tipoGrado: '', carrera: '', titulo: '', institucion: '', fechaObtencion: '', documento: '' });
+const [newGrado, setNewGrado] = useState({   
+  codCia: '',   
+  codGrado: '',  // Esto será generado automáticamente  
+  codEmpleado: '',   
+  tipoGrado: '',  
+  carrera: '',   
+  titulo: '',   
+  institucion: '',   
+  fechaObtencion: '',   
+  documento: ''   
+});
   const [newEspecializacion, setNewEspecializacion] = useState({ codCia: '', codEspecialidad: '', codEmpleado: '', especialidad: '', certificado: '', institucion: '', fechaObtencion: '', horasCapacitacion: '' });
   const [newExperiencia, setNewExperiencia] = useState({ empresa: '', especialidad_laboral: '', fecha_inicio_laboral: '', fecha_fin_laboral: '' });
 
@@ -66,31 +81,27 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
           setGrados([]);
         }
 
-        if (Array.isArray(editingItem.especialidades)) {
-          setEspecializaciones(editingItem.especialidades);
-        } else if (editingItem.especialidad) {
-          setEspecializaciones([{
-            codCia: '',
-            codEspecialidad: '',
-            codEmpleado: '',
-            especialidad: editingItem.especialidad || '',
-            horas_capacitacion: editingItem.horas_capacitacion || '',
-          }]);
-        } else {
-          setEspecializaciones([]);
-        }
-
-        if (Array.isArray(editingItem.experiencias_laborales)) {
-          setExperiencias(editingItem.experiencias_laborales);
-        } else if (editingItem.empresa) {
-          setExperiencias([{
-            empresa: editingItem.empresa || '',
-            especialidad_laboral: editingItem.especialidad_laboral || '',
-            fecha_inicio_laboral: editingItem.fecha_inicio_laboral || '',
-            fecha_fin_laboral: editingItem.fecha_fin_laboral || '',
-          }]);
-        } else {
-          setExperiencias([]);
+        // Inicializar experiencias laborales  
+        if (Array.isArray(editingItem.experienciasLaborales)) {    
+          // Mapear los campos del backend a los campos del frontend  
+          setExperiencias(editingItem.experienciasLaborales.map((exp: any) => ({  
+            codCia: exp.codCia,  
+            codExperiencia: exp.codExperiencia,  
+            codEmpleado: exp.codEmpleado,  
+            empresa: exp.empresa || '',  
+            especialidad_laboral: exp.especialidad || '',  // Backend usa 'especialidad', frontend usa 'especialidad_laboral'  
+            fecha_inicio_laboral: exp.fechaInicio || '',   // Backend usa 'fechaInicio', frontend usa 'fecha_inicio_laboral'  
+            fecha_fin_laboral: exp.fechaFin || '',         // Backend usa 'fechaFin', frontend usa 'fecha_fin_laboral'  
+          })));  
+        } else if (editingItem.empresa) {    
+          setExperiencias([{    
+            empresa: editingItem.empresa || '',    
+            especialidad_laboral: editingItem.especialidad_laboral || '',    
+            fecha_inicio_laboral: editingItem.fecha_inicio_laboral || '',    
+            fecha_fin_laboral: editingItem.fecha_fin_laboral || '',    
+          }]);    
+        } else {    
+          setExperiencias([]);    
         }
 
       } else {
@@ -237,54 +248,198 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
         }  
     
       } else {  
-        // Lógica de actualización  
-        const empleadoPayload = {  
-          codCia: 1,  
-          codEmpleado: editingItem.codEmpleado,  
-          direcc: formData.direccion,  
-          celular: formData.telefono,  
-          email: formData.email,  
-          dni: formData.documento_identidad,  
-          fecNac: formData.fecha_nacimiento,  
-          hobby: editingItem.hobby || '',  
-          nroCIP: editingItem.nroCIP || '0000000000',  
-          fecCIPVig: editingItem.fecCIPVig || new Date().toISOString().split('T')[0],  
-          licCond: editingItem.licCond || '0',  
-          flgEmplIEA: editingItem.flgEmplIEA || '0',  
-          observac: editingItem.observac || '',  
-          codCargo: editingItem.codCargo || 1,  
-          vigente: '1'  
-        };  
-    
-        const empleadoRes = await fetch(`${API_ENDPOINTS.EMPLEADO}/1/${editingItem.codEmpleado}`, {  
-          method: 'PUT',  
-          headers: { 'Content-Type': 'application/json' },  
-          body: JSON.stringify(empleadoPayload),  
-        });  
-    
-        if (!empleadoRes.ok) {  
-          alert('Error al actualizar el empleado');  
-          return;  
+      // Lógica de actualización
+      
+      // ELIMINAR items marcados
+      for (const grado of deletedGrados) {  
+        if (grado.codGrado && typeof grado.codGrado === 'number') {  
+          await fetch(`${API_ENDPOINTS.GRADO}/1/${grado.codGrado}/${editingItem.codEmpleado}`, {  
+            method: 'DELETE',  
+          }).catch(err => console.error('Error eliminando grado:', err));  
         }  
-    
-        // Actualizar persona  
-        const personaPayload = {  
-          codCia: 1,  
-          codPersona: editingItem.codEmpleado,  
-          tipPersona: 'E',  
-          desPersona: formData.nombre_completo,  
-          desCorta: formData.nombre_completo.substring(0, 30),  
-          descAlterna: formData.nombre_completo,  
-          desCortaAlt: formData.nombre_completo.substring(0, 10),  
-          vigente: '1'  
-        };  
-    
-        await fetch(`${API_ENDPOINTS.PERSONA}/1/${editingItem.codEmpleado}`, {  
-          method: 'PUT',  
-          headers: { 'Content-Type': 'application/json' },  
-          body: JSON.stringify(personaPayload),  
-        });  
-      }  
+      }
+
+      for (const esp of deletedEspecializaciones) {  
+        if (esp.codEspecialidad && typeof esp.codEspecialidad === 'number') {  
+          await fetch(`${API_ENDPOINTS.ESPECIALIDAD}/1/${esp.codEspecialidad}/${editingItem.codEmpleado}`, {  
+            method: 'DELETE',  
+          }).catch(err => console.error('Error eliminando especialidad:', err));  
+        }  
+      }
+
+      for (const exp of deletedExperiencias) {  
+        if (exp.codExperiencia && typeof exp.codExperiencia === 'number') {  
+          await fetch(`${API_ENDPOINTS.EXPERIENCIA}/1/${exp.codExperiencia}/${editingItem.codEmpleado}`, {  
+            method: 'DELETE',  
+          }).catch(err => console.error('Error eliminando experiencia:', err));  
+        }  
+      }
+
+      // Actualizar empleado
+      const empleadoPayload = {    
+        codCia: 1,    
+        codEmpleado: editingItem.codEmpleado,    
+        direcc: formData.direccion,    
+        celular: formData.telefono,    
+        email: formData.email,    
+        dni: formData.documento_identidad,    
+        fecNac: formData.fecha_nacimiento,    
+        hobby: editingItem.hobby || 'Sin especificar',    
+        nroCIP: editingItem.nroCIP || '0000000000',    
+        fecCIPVig: editingItem.fecCIPVig || new Date().toISOString().split('T')[0],    
+        licCond: editingItem.licCond || '0',    
+        flgEmplIEA: editingItem.flgEmplIEA || '0',    
+        observac: editingItem.observac || 'Sin observaciones',    
+        codCargo: editingItem.codCargo || 1,    
+        vigente: '1'    
+      };    
+      
+      const empleadoRes = await fetch(`${API_ENDPOINTS.EMPLEADO}/1/${editingItem.codEmpleado}`, {    
+        method: 'PUT',    
+        headers: { 'Content-Type': 'application/json' },    
+        body: JSON.stringify(empleadoPayload),    
+      });    
+      
+      if (!empleadoRes.ok) {    
+        alert('Error al actualizar el empleado');    
+        return;    
+      }    
+      
+      // Actualizar persona    
+      const personaPayload = {    
+        codCia: 1,    
+        codPersona: editingItem.codEmpleado,    
+        tipPersona: 'E',    
+        desPersona: formData.nombre_completo,    
+        desCorta: formData.nombre_completo.substring(0, 30),    
+        descAlterna: formData.nombre_completo,    
+        desCortaAlt: formData.nombre_completo.substring(0, 10),    
+        vigente: '1'    
+      };    
+      
+      await fetch(`${API_ENDPOINTS.PERSONA}/1/${editingItem.codEmpleado}`, {    
+        method: 'PUT',    
+        headers: { 'Content-Type': 'application/json' },    
+        body: JSON.stringify(personaPayload),    
+      });    
+      
+      // ACTUALIZAR grados académicos      
+      for (const grado of grados) {        
+        const gradoPayload = {      
+          codCia: 1,      
+          codGrado: grado.codGrado || Math.floor(Math.random() * 999999) + 1,  
+          codEmpleado: editingItem.codEmpleado,      
+          tipoGrado: grado.tipoGrado || 'LICENCIATURA',    
+          carrera: grado.carrera || '',      
+          titulo: grado.titulo || grado.carrera || '',      
+          institucion: grado.institucion || '',      
+          fechaObtencion: grado.fechaObtencion || null,      
+          documento: null      
+        };      
+          
+        if (grado.codGrado && typeof grado.codGrado === 'number') {      
+          const response = await fetch(`${API_ENDPOINTS.GRADO}/1/${grado.codGrado}/${editingItem.codEmpleado}`, {      
+            method: 'PUT',      
+            headers: { 'Content-Type': 'application/json' },      
+            body: JSON.stringify(gradoPayload),      
+          });    
+              
+            if (!response.ok) {    
+              const errorText = await response.text();    
+              console.error('Error actualizando grado:', errorText);    
+              alert(`Error al actualizar grado: ${errorText}`);  
+            }    
+        } else {      
+          const response = await fetch(API_ENDPOINTS.GRADO, {      
+            method: 'POST',      
+            headers: { 'Content-Type': 'application/json' },      
+            body: JSON.stringify(gradoPayload),      
+          });    
+              
+            if (!response.ok) {    
+              const errorText = await response.text();    
+              console.error('Error creando grado:', errorText);    
+              alert(`Error al crear grado: ${errorText}`);  
+            }    
+        }      
+      }        
+          
+      // ACTUALIZAR especializaciones      
+      for (const esp of especializaciones) {        
+        const espPayload = {      
+          codCia: 1,      
+          codEspecialidad: esp.codEspecialidad || Math.floor(Math.random() * 999999) + 1,  
+          codEmpleado: editingItem.codEmpleado,      
+          especialidad: esp.especialidad || '',      
+          certificado: null,      
+          institucion: esp.institucion || '',      
+          fechaObtencion: esp.fechaObtencion || null,      
+          horasCapacitacion: parseInt(esp.horasCapacitacion) || 0    
+        };      
+          
+        if (esp.codEspecialidad && typeof esp.codEspecialidad === 'number') {      
+          const response = await fetch(`${API_ENDPOINTS.ESPECIALIDAD}/1/${esp.codEspecialidad}/${editingItem.codEmpleado}`, {      
+            method: 'PUT',      
+            headers: { 'Content-Type': 'application/json' },      
+            body: JSON.stringify(espPayload),      
+          });    
+              
+              
+        } else {      
+          const response = await fetch(API_ENDPOINTS.ESPECIALIDAD, {      
+            method: 'POST',      
+            headers: { 'Content-Type': 'application/json' },      
+            body: JSON.stringify(espPayload),      
+          });    
+              
+            if (!response.ok) {    
+              const errorText = await response.text();    
+              console.error('Error creando especialidad:', errorText);    
+              alert(`Error al crear especialidad: ${errorText}`);  
+            }    
+        }      
+      }        
+          
+      // ACTUALIZAR experiencias laborales      
+      for (const exp of experiencias) {        
+        const expPayload = {      
+          codCia: 1,      
+          codExperiencia: exp.codExperiencia || Math.floor(Math.random() * 999999) + 1,  
+          codEmpleado: editingItem.codEmpleado,      
+          empresa: exp.empresa || '',      
+          especialidad: exp.especialidad_laboral || '',    
+          fechaInicio: exp.fecha_inicio_laboral || null,      
+          fechaFin: exp.fecha_fin_laboral || null,      
+          certificado: null      
+        };      
+          
+        if (exp.codExperiencia && typeof exp.codExperiencia === 'number') {      
+          const response = await fetch(`${API_ENDPOINTS.EXPERIENCIA}/1/${exp.codExperiencia}/${editingItem.codEmpleado}`, {      
+            method: 'PUT',      
+            headers: { 'Content-Type': 'application/json' },      
+            body: JSON.stringify(expPayload),      
+          });    
+              
+            if (!response.ok) {    
+              const errorText = await response.text();    
+              console.error('Error actualizando experiencia:', errorText);    
+              alert(`Error al actualizar experiencia: ${errorText}`);  
+            }    
+        } else {      
+          const response = await fetch(API_ENDPOINTS.EXPERIENCIA, {      
+            method: 'POST',      
+            headers: { 'Content-Type': 'application/json' },      
+            body: JSON.stringify(expPayload),      
+          });    
+              
+            if (!response.ok) {    
+              const errorText = await response.text();    
+              console.error('Error creando experiencia:', errorText);    
+              alert(`Error al crear experiencia: ${errorText}`);  
+            }    
+        }      
+      }
+    }   
         
       onSuccess();  
       onOpenChange(false);  
@@ -426,7 +581,13 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
                     </div>
                     {isEditing && (
                       <div>
-                        <Button variant="outline" onClick={() => setGrados(prev => prev.filter((_, i) => i !== idx))}>Eliminar</Button>
+                        <Button variant="outline" onClick={() => {
+                          const gradoToDelete = grados[idx];
+                          if (gradoToDelete.codGrado) {
+                            setDeletedGrados(prev => [...prev, gradoToDelete]);
+                          }
+                          setGrados(prev => prev.filter((_, i) => i !== idx));
+                        }}>Eliminar</Button>
                       </div>
                     )}
                   </div>
@@ -435,19 +596,22 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
 
               {isEditing && (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tipo de Grado</Label>
-                    <Select value={newGrado.codGrado} onValueChange={(v) => setNewGrado({ ...newGrado, codGrado: v })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="LICENCIATURA">Licenciatura</SelectItem>
-                        <SelectItem value="MAESTRIA">Maestría</SelectItem>
-                        <SelectItem value="DOCTORADO">Doctorado</SelectItem>
-                        <SelectItem value="TECNICO">Técnico</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-2">  
+                    <Label>Tipo de Grado</Label>  
+                    <Select   
+                      value={newGrado.tipoGrado}  
+                      onValueChange={(v) => setNewGrado({ ...newGrado, tipoGrado: v })}  
+                    >  
+                      <SelectTrigger>  
+                        <SelectValue placeholder="Seleccionar" />  
+                      </SelectTrigger>  
+                      <SelectContent>  
+                        <SelectItem value="LICENCIATURA">Licenciatura</SelectItem>  
+                        <SelectItem value="MAESTRIA">Maestría</SelectItem>  
+                        <SelectItem value="DOCTORADO">Doctorado</SelectItem>  
+                        <SelectItem value="TECNICO">Técnico</SelectItem>  
+                      </SelectContent>  
+                    </Select>  
                   </div>
                   <div className="space-y-2">
                     <Label>Carrera/Título</Label>
@@ -462,12 +626,26 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
                     <Input type="date" value={newGrado.fechaObtencion} onChange={(e) => setNewGrado({ ...newGrado, fechaObtencion: e.target.value })} />
                   </div>
                   <div className="col-span-2 flex justify-end">
-                    <Button onClick={() => {
-                      setGrados(prev => [...prev, { ...newGrado }]);
-                      setNewGrado({ codCia: '', codGrado: '', codEmpleado: '', tipoGrado: '', carrera: '', titulo: '', institucion: '', fechaObtencion: '', documento: '' });
-                    }}>
-                      Agregar Grado
-                    </Button>
+                    <Button onClick={() => {  
+                      setGrados(prev => [...prev, {   
+                        ...newGrado,  
+                        tipoGrado: newGrado.tipoGrado,  
+                        titulo: newGrado.carrera  
+                      }]);  
+                      setNewGrado({   
+                        codCia: '',   
+                        codGrado: '',   
+                        codEmpleado: '',   
+                        tipoGrado: '',  
+                        carrera: '',   
+                        titulo: '',   
+                        institucion: '',   
+                        fechaObtencion: '',   
+                        documento: ''   
+                      });  
+                    }}>  
+                      Agregar Grado  
+                    </Button>  
                   </div>
                 </div>
               )}
@@ -487,7 +665,13 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
                     </div>
                     {isEditing && (
                       <div>
-                        <Button variant="outline" onClick={() => setEspecializaciones(prev => prev.filter((_, i) => i !== idx))}>Eliminar</Button>
+                        <Button variant="outline" onClick={() => {
+                          const espToDelete = especializaciones[idx];
+                          if (espToDelete.codEspecialidad) {
+                            setDeletedEspecializaciones(prev => [...prev, espToDelete]);
+                          }
+                          setEspecializaciones(prev => prev.filter((_, i) => i !== idx));
+                        }}>Eliminar</Button>
                       </div>
                     )}
                   </div>
@@ -495,23 +679,54 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
               </div>
 
               {isEditing && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Especialidad</Label>
-                    <Input value={newEspecializacion.especialidad} onChange={(e) => setNewEspecializacion({ ...newEspecializacion, especialidad: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Horas de Capacitación</Label>
-                    <Input type="number" value={newEspecializacion.horasCapacitacion} onChange={(e) => setNewEspecializacion({ ...newEspecializacion, horasCapacitacion: e.target.value })} />
-                  </div>
-                  <div className="col-span-2 flex justify-end">
-                    <Button onClick={() => {
-                      setEspecializaciones(prev => [...prev, { ...newEspecializacion }]);
-                      setNewEspecializacion({ codCia: '', codEspecialidad: '', codEmpleado: '', especialidad: '', certificado: '', institucion: '', fechaObtencion: '', horasCapacitacion: '' });
-                    }}>
-                      Agregar Especialización
-                    </Button>
-                  </div>
+                <div className="grid grid-cols-2 gap-4">  
+                  <div className="space-y-2">  
+                    <Label>Especialidad</Label>  
+                    <Input   
+                      value={newEspecializacion.especialidad}   
+                      onChange={(e) => setNewEspecializacion({ ...newEspecializacion, especialidad: e.target.value })}   
+                    />  
+                  </div>  
+                  <div className="space-y-2">  
+                    <Label>Institución</Label>  
+                    <Input   
+                      value={newEspecializacion.institucion}   
+                      onChange={(e) => setNewEspecializacion({ ...newEspecializacion, institucion: e.target.value })}   
+                    />  
+                  </div>  
+                  <div className="space-y-2">  
+                    <Label>Fecha de Obtención</Label>  
+                    <Input   
+                      type="date"  
+                      value={newEspecializacion.fechaObtencion}   
+                      onChange={(e) => setNewEspecializacion({ ...newEspecializacion, fechaObtencion: e.target.value })}   
+                    />  
+                  </div>  
+                  <div className="space-y-2">  
+                    <Label>Horas de Capacitación</Label>  
+                    <Input   
+                      type="number"   
+                      value={newEspecializacion.horasCapacitacion}   
+                      onChange={(e) => setNewEspecializacion({ ...newEspecializacion, horasCapacitacion: e.target.value })}   
+                    />  
+                  </div>  
+                  <div className="col-span-2 flex justify-end">  
+                    <Button onClick={() => {  
+                      setEspecializaciones(prev => [...prev, { ...newEspecializacion }]);  
+                      setNewEspecializacion({   
+                        codCia: '',   
+                        codEspecialidad: '',   
+                        codEmpleado: '',   
+                        especialidad: '',   
+                        certificado: '',   
+                        institucion: '',  
+                        fechaObtencion: '',  
+                        horasCapacitacion: ''   
+                      });  
+                    }}>  
+                      Agregar Especialización  
+                    </Button>  
+                  </div>  
                 </div>
               )}
             </div>
@@ -530,7 +745,13 @@ export function PersonalDialog({ open, onOpenChange, editingItem, onSuccess }: P
                     </div>
                     {isEditing && (
                       <div>
-                        <Button variant="outline" onClick={() => setExperiencias(prev => prev.filter((_, i) => i !== idx))}>Eliminar</Button>
+                        <Button variant="outline" onClick={() => {
+                          const expToDelete = experiencias[idx];
+                          if (expToDelete.codExperiencia) {
+                            setDeletedExperiencias(prev => [...prev, expToDelete]);
+                          }
+                          setExperiencias(prev => prev.filter((_, i) => i !== idx));
+                        }}>Eliminar</Button>
                       </div>
                     )}
                   </div>
