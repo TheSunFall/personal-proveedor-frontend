@@ -42,14 +42,16 @@ export default function PagosPage() {
     }
   };
 
-  const filteredPersonal = searchTerm? (personal.filter(p =>
-    p.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase())
-  )) : personal;
-
-  const filteredProveedores = searchTerm? (proveedores.filter(p =>
-    p.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPersonal = searchTerm ? (personal.filter(p =>  
+    p.persona?.desPersona?.toLowerCase().includes(searchTerm.toLowerCase()) ||  
+    p.dni?.toLowerCase().includes(searchTerm.toLowerCase()) ||  
+    p.email?.toLowerCase().includes(searchTerm.toLowerCase())  
+  )) : personal;  
+  
+  const filteredProveedores = searchTerm ? (proveedores.filter(p =>  
+    p.persona?.desPersona?.toLowerCase().includes(searchTerm.toLowerCase()) ||  
+    p.nroRuc?.toLowerCase().includes(searchTerm.toLowerCase())  
   )) : proveedores;
-
   return (
     <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
