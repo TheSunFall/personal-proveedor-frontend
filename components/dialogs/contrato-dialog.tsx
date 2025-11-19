@@ -62,18 +62,18 @@ export function ContratoDialog({ open, onOpenChange, codProveedor, codPyto, onSu
                 ? (documentoBase64.split(',').pop() as string)
                 : null;
 
-            const payload = {
-                codContrato: '13435', // TODO: reemplazar con endpoint de códigos
-                codProveedor: codProveedor,
-                numeroContrato: formData.numeroContrato,
-                tipoContrato: formData.tipoContrato,
-                fechaInicio: formData.fechaInicio,
-                fechaFin: formData.fechaFin,
-                montoTotal: formData.montoTotal,
-                moneda: formData.moneda,
-                documentoContrato: documentoString,
-                codCia: 1,
-                codPyto: codPyto
+            const payload = {  
+                // Ya no incluyas codContrato aquí - el backend lo generará  
+                codProveedor: codProveedor,  
+                numeroContrato: formData.numeroContrato,  
+                tipoContrato: formData.tipoContrato,  
+                fechaInicio: formData.fechaInicio,  
+                fechaFin: formData.fechaFin,  
+                montoTotal: formData.montoTotal,  
+                moneda: formData.moneda,  
+                documentoContrato: documentoString,  
+                codCia: 1,  
+                codPyto: codPyto  
             };
 
             const res = await fetch(url, {

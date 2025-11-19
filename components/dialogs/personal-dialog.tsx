@@ -323,126 +323,171 @@ const [newGrado, setNewGrado] = useState({
         body: JSON.stringify(personaPayload),    
       });    
       
-      // ACTUALIZAR grados académicos      
-      for (const grado of grados) {        
-        const gradoPayload = {      
-          codCia: 1,      
-          codGrado: grado.codGrado || Math.floor(Math.random() * 999999) + 1,  
-          codEmpleado: editingItem.codEmpleado,      
-          tipoGrado: grado.tipoGrado || 'LICENCIATURA',    
-          carrera: grado.carrera || '',      
-          titulo: grado.titulo || grado.carrera || '',      
-          institucion: grado.institucion || '',      
-          fechaObtencion: grado.fechaObtencion || null,      
-          documento: null      
-        };      
+      // ACTUALIZAR grados académicos        
+      for (const grado of grados) {          
+        if (grado.codGrado && typeof grado.codGrado === 'number') {    
+          // UPDATE: incluye codGrado para registros existentes    
+          const gradoPayload = {          
+            codCia: 1,          
+            codGrado: grado.codGrado,  // Incluir aquí para UPDATE  
+            codEmpleado: editingItem.codEmpleado,          
+            tipoGrado: grado.tipoGrado || 'LICENCIATURA',        
+            carrera: grado.carrera || '',          
+            titulo: grado.titulo || grado.carrera || '',          
+            institucion: grado.institucion || '',          
+            fechaObtencion: grado.fechaObtencion || null,          
+            documento: null          
+          };  
+            
+          const response = await fetch(`${API_ENDPOINTS.GRADO}/1/${grado.codGrado}/${editingItem.codEmpleado}`, {        
+            method: 'PUT',        
+            headers: { 'Content-Type': 'application/json' },        
+            body: JSON.stringify(gradoPayload),        
+          });  
           
-        if (grado.codGrado && typeof grado.codGrado === 'number') {      
-          const response = await fetch(`${API_ENDPOINTS.GRADO}/1/${grado.codGrado}/${editingItem.codEmpleado}`, {      
-            method: 'PUT',      
-            headers: { 'Content-Type': 'application/json' },      
-            body: JSON.stringify(gradoPayload),      
-          });    
-              
-            if (!response.ok) {    
-              const errorText = await response.text();    
-              console.error('Error actualizando grado:', errorText);    
-              alert(`Error al actualizar grado: ${errorText}`);  
-            }    
-        } else {      
-          const response = await fetch(API_ENDPOINTS.GRADO, {      
-            method: 'POST',      
-            headers: { 'Content-Type': 'application/json' },      
-            body: JSON.stringify(gradoPayload),      
-          });    
-              
-            if (!response.ok) {    
-              const errorText = await response.text();    
-              console.error('Error creando grado:', errorText);    
-              alert(`Error al crear grado: ${errorText}`);  
-            }    
-        }      
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error actualizando grado:', response.status, errorText);
+            alert(`Error al actualizar grado: ${errorText}`);
+          }
+        } else {  
+          // POST: no incluir codGrado - el backend lo generará  
+          const gradoPayload = {          
+            codCia: 1,          
+            // NO incluir codGrado aquí  
+            codEmpleado: editingItem.codEmpleado,          
+            tipoGrado: grado.tipoGrado || 'LICENCIATURA',        
+            carrera: grado.carrera || '',          
+            titulo: grado.titulo || grado.carrera || '',          
+            institucion: grado.institucion || '',          
+            fechaObtencion: grado.fechaObtencion || null,          
+            documento: null          
+          };  
+            
+          const response = await fetch(API_ENDPOINTS.GRADO, {        
+            method: 'POST',        
+            headers: { 'Content-Type': 'application/json' },        
+            body: JSON.stringify(gradoPayload),        
+          });  
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error creando grado:', response.status, errorText);
+            alert(`Error al crear grado: ${errorText}`);
+          }
+        }        
       }        
           
       // ACTUALIZAR especializaciones      
-      for (const esp of especializaciones) {        
-        const espPayload = {      
-          codCia: 1,      
-          codEspecialidad: esp.codEspecialidad || Math.floor(Math.random() * 999999) + 1,  
-          codEmpleado: editingItem.codEmpleado,      
-          especialidad: esp.especialidad || '',      
-          certificado: null,      
-          institucion: esp.institucion || '',      
-          fechaObtencion: esp.fechaObtencion || null,      
-          horasCapacitacion: parseInt(esp.horasCapacitacion) || 0    
-        };      
-          
-        if (esp.codEspecialidad && typeof esp.codEspecialidad === 'number') {      
-          const response = await fetch(`${API_ENDPOINTS.ESPECIALIDAD}/1/${esp.codEspecialidad}/${editingItem.codEmpleado}`, {      
-            method: 'PUT',      
-            headers: { 'Content-Type': 'application/json' },      
-            body: JSON.stringify(espPayload),      
-          });    
-              
-              
-        } else {      
-          const response = await fetch(API_ENDPOINTS.ESPECIALIDAD, {      
-            method: 'POST',      
-            headers: { 'Content-Type': 'application/json' },      
-            body: JSON.stringify(espPayload),      
-          });    
-              
-            if (!response.ok) {    
-              const errorText = await response.text();    
-              console.error('Error creando especialidad:', errorText);    
-              alert(`Error al crear especialidad: ${errorText}`);  
-            }    
-        }      
-      }        
-          
-      // ACTUALIZAR experiencias laborales      
-      for (const exp of experiencias) {        
-        const expPayload = {      
-          codCia: 1,      
-          codExperiencia: exp.codExperiencia || Math.floor(Math.random() * 999999) + 1,  
-          codEmpleado: editingItem.codEmpleado,      
-          empresa: exp.empresa || '',      
-          especialidad: exp.especialidad_laboral || '',    
-          fechaInicio: exp.fecha_inicio_laboral || null,      
-          fechaFin: exp.fecha_fin_laboral || null,      
-          certificado: null      
-        };      
-          
-        if (exp.codExperiencia && typeof exp.codExperiencia === 'number') {      
-          const response = await fetch(`${API_ENDPOINTS.EXPERIENCIA}/1/${exp.codExperiencia}/${editingItem.codEmpleado}`, {      
-            method: 'PUT',      
-            headers: { 'Content-Type': 'application/json' },      
-            body: JSON.stringify(expPayload),      
-          });    
-              
-            if (!response.ok) {    
-              const errorText = await response.text();    
-              console.error('Error actualizando experiencia:', errorText);    
-              alert(`Error al actualizar experiencia: ${errorText}`);  
-            }    
-        } else {      
-          const response = await fetch(API_ENDPOINTS.EXPERIENCIA, {      
-            method: 'POST',      
-            headers: { 'Content-Type': 'application/json' },      
-            body: JSON.stringify(expPayload),      
-          });    
-              
-            if (!response.ok) {    
-              const errorText = await response.text();    
-              console.error('Error creando experiencia:', errorText);    
-              alert(`Error al crear experiencia: ${errorText}`);  
-            }    
-        }      
+      for (const esp of especializaciones) {          
+        if (esp.codEspecialidad && typeof esp.codEspecialidad === 'number') {    
+          // UPDATE: incluye codEspecialidad para registros existentes    
+          const espPayload = {          
+            codCia: 1,          
+            codEspecialidad: esp.codEspecialidad,  // Incluir aquí para UPDATE  
+            codEmpleado: editingItem.codEmpleado,          
+            especialidad: esp.especialidad || '',          
+            certificado: null,          
+            institucion: esp.institucion || '',          
+            fechaObtencion: esp.fechaObtencion || null,          
+            horasCapacitacion: parseInt(esp.horasCapacitacion) || 0        
+          };  
+            
+          const response = await fetch(`${API_ENDPOINTS.ESPECIALIDAD}/1/${esp.codEspecialidad}/${editingItem.codEmpleado}`, {          
+            method: 'PUT',          
+            headers: { 'Content-Type': 'application/json' },          
+            body: JSON.stringify(espPayload),          
+          });        
+                  
+          if (!response.ok) {        
+            const errorText = await response.text();        
+            console.error('Error actualizando especialidad:', errorText);        
+            alert(`Error al actualizar especialidad: ${errorText}`);      
+          }        
+        } else {    
+          // POST: no incluir codEspecialidad - el backend lo generará    
+          const espPayload = {          
+            codCia: 1,          
+            // NO incluir codEspecialidad aquí  
+            codEmpleado: editingItem.codEmpleado,          
+            especialidad: esp.especialidad || '',          
+            certificado: null,          
+            institucion: esp.institucion || '',          
+            fechaObtencion: esp.fechaObtencion || null,          
+            horasCapacitacion: parseInt(esp.horasCapacitacion) || 0        
+          };  
+            
+          const response = await fetch(API_ENDPOINTS.ESPECIALIDAD, {          
+            method: 'POST',          
+            headers: { 'Content-Type': 'application/json' },          
+            body: JSON.stringify(espPayload),          
+          });        
+                  
+          if (!response.ok) {        
+            const errorText = await response.text();        
+            console.error('Error creando especialidad:', errorText);        
+            alert(`Error al crear especialidad: ${errorText}`);      
+          }        
+        }          
       }
-    }   
-        
+
+      // ACTUALIZAR experiencias laborales        
+      for (const exp of experiencias) {          
+        if (exp.codExperiencia && typeof exp.codExperiencia === 'number') {    
+          // UPDATE: incluye codExperiencia para registros existentes    
+          const expPayload = {          
+            codCia: 1,          
+            codExperiencia: exp.codExperiencia,  // Incluir aquí para UPDATE  
+            codEmpleado: editingItem.codEmpleado,          
+            empresa: exp.empresa || '',          
+            especialidad: exp.especialidad_laboral || '',        
+            fechaInicio: exp.fecha_inicio_laboral || null,          
+            fechaFin: exp.fecha_fin_laboral || null,          
+            certificado: null          
+          };  
+            
+          const response = await fetch(`${API_ENDPOINTS.EXPERIENCIA}/1/${exp.codExperiencia}/${editingItem.codEmpleado}`, {          
+            method: 'PUT',          
+            headers: { 'Content-Type': 'application/json' },          
+            body: JSON.stringify(expPayload),          
+          });        
+                  
+          if (!response.ok) {        
+            const errorText = await response.text();        
+            console.error('Error actualizando experiencia:', errorText);        
+            alert(`Error al actualizar experiencia: ${errorText}`);      
+          }        
+        } else {    
+          // POST: no incluir codExperiencia - el backend lo generará    
+          const expPayload = {          
+            codCia: 1,          
+            // NO incluir codExperiencia aquí  
+            codEmpleado: editingItem.codEmpleado,          
+            empresa: exp.empresa || '',          
+            especialidad: exp.especialidad_laboral || '',        
+            fechaInicio: exp.fecha_inicio_laboral || null,          
+            fechaFin: exp.fecha_fin_laboral || null,          
+            certificado: null          
+          };  
+            
+          const response = await fetch(API_ENDPOINTS.EXPERIENCIA, {          
+            method: 'POST',          
+            headers: { 'Content-Type': 'application/json' },          
+            body: JSON.stringify(expPayload),          
+          });        
+                  
+          if (!response.ok) {        
+            const errorText = await response.text();        
+            console.error('Error creando experiencia:', errorText);        
+            alert(`Error al crear experiencia: ${errorText}`);      
+          }        
+        }          
+      }
+      
       onSuccess();  
       onOpenChange(false);  
+    }
+  
     } catch (error) {  
       console.error('Error submitting form:', error);  
       alert('Error al guardar los datos');  

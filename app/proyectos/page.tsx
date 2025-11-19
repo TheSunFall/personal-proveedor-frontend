@@ -9,6 +9,7 @@ import { ProyectoDialog } from '@/components/dialogs/proyecto-dialog';
 import { ProyectoTable } from '@/components/tables/proyecto-table';
 import { API_ENDPOINTS } from '@/lib/config';
 import { TareaDialog } from '@/components/dialogs/tareas-dialog';
+import { RecursosDialog } from '@/components/dialogs/recursos-dialog';
 
 export default function ProyectosPage() {
   const [proyectos, setProyectos] = useState<any[]>([]);
@@ -17,6 +18,7 @@ export default function ProyectosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editDialog, setEditDialog] = useState(false);
   const [taskDialog, setTaskDialog] = useState(false);
+  const [resourceDialog, setResourceDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => {
@@ -88,6 +90,11 @@ export default function ProyectosPage() {
     fetchProyectos();
   };
 
+  const handleAssignResources = (item: any) => {  
+    setEditingItem(item);  
+    setResourceDialog(true);  
+};
+
   return (
     <main className="h-full w-full min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
@@ -130,6 +137,7 @@ export default function ProyectosPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onTask={handleTask}
+              onAssignResources={handleAssignResources}
             />
           </CardContent>
         </Card>
@@ -146,6 +154,13 @@ export default function ProyectosPage() {
           onOpenChange={setTaskDialog}
           editingItem={editingItem}
           onSuccess={() => handleDialogClose(setTaskDialog)}
+        />
+
+        <RecursosDialog
+          open={resourceDialog}
+          onOpenChange={setResourceDialog}
+          editingItem={editingItem}
+          onSuccess={() => handleDialogClose(setResourceDialog)}
         />
       </div>
     </main>
