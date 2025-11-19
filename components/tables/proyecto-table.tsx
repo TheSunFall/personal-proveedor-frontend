@@ -9,9 +9,10 @@ interface ProyectoTableProps {
   onEdit: (item: any) => void;
   onDelete: (item: any) => void;
   onTask: (item: any) => void;
+  onAssignResources: (item: any) => void;
 }
 
-export function ProyectoTable({ data, loading, onEdit, onDelete, onTask }: ProyectoTableProps) {
+export function ProyectoTable({ data, loading, onEdit, onDelete, onTask, onAssignResources }: ProyectoTableProps) {
   if (loading) {
     return <div className="text-center py-8 text-muted-foreground">Cargando...</div>;
   }
@@ -55,7 +56,13 @@ export function ProyectoTable({ data, loading, onEdit, onDelete, onTask }: Proye
                 </span>
               </td>
               <td className="py-3 text-right flex gap-1 justify-end">
-                <Button variant="ghost" size="sm" title="Asignar recursos" className="text-cyan-600 hover:cursor-pointer hover:bg-cyan-600/20">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  title="Asignar recursos" 
+                  onClick={() => onAssignResources(item)}
+                  className="text-cyan-600 hover:cursor-pointer hover:bg-cyan-600/20"
+                >
                   <Users size={16} />
                 </Button>
                 <Button variant="ghost" size="sm" title="Tareas" onClick={() => onTask(item)} className="text-purple-500 hover:cursor-pointer hover:bg-purple-500/15">

@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   EMPLEADO: `${BASE_API_URL}/api/personal`,
   PROVEEDOR: `${BASE_API_URL}/api/proveedores`,
   PROYECTO: `${BASE_API_URL}/api/proyectos`,
+  PERSONAL_PROYECTOS: `${BASE_API_URL}/api/personal-proyectos`,
   AREA: `${BASE_API_URL}/api/areas`,
   CARGO_AREA: `${BASE_API_URL}/api/cargos-areas`,
   CLIENTE: `${BASE_API_URL}/api/clientes`,

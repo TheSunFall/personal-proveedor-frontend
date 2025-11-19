@@ -130,7 +130,7 @@ export function ProveedorDialog({ open, onOpenChange, editingItem, onSuccess }: 
             descripcion: serviciosData.descripcion  
           };  
   
-          const servicioRes = await fetch(API_ENDPOINTS.SERVICIO_PROVEEDOR, {  
+          const servicioRes = await fetch(API_ENDPOINTS.SERVICIOS, {  
             method: 'POST',  
             headers: { 'Content-Type': 'application/json' },  
             body: JSON.stringify(servicioPayload),  
@@ -197,7 +197,7 @@ export function ProveedorDialog({ open, onOpenChange, editingItem, onSuccess }: 
             descripcion: serviciosData.descripcion  
           };  
   
-          const servicioRes = await fetch(API_ENDPOINTS.SERVICIO_PROVEEDOR, {  
+          const servicioRes = await fetch(API_ENDPOINTS.SERVICIOS, {  
             method: 'POST',  
             headers: { 'Content-Type': 'application/json' },  
             body: JSON.stringify(servicioPayload),  
